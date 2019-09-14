@@ -1,2 +1,6 @@
-# wxCrawler
-微信公众号爬虫，自动爬取标题、简介、图片、时间、链接，每1次推送*条为1个数组，自动输出为JSON格式，方便其他程序调用
+## 运行效果
+![image](https://raw.githubusercontent.com/cooljser/wx-article-crawler/master/img/crawler.png)
+
+## 使用方法
+* 获取 key，uin、__biz 填入 index.js 中的 COMMON_PARAMS
+* node index.js
