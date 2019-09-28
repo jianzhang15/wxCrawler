@@ -164,7 +164,7 @@ function run(offset = 0) {
               desc: item.digest,
               url: item.content_url,
               time: time,
-              cover: info.cover
+              cover: item.cover
             });
           });
         }
