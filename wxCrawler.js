@@ -15,9 +15,9 @@ axios.defaults.headers.common = {
 
 const COMMON_PARAMS = {
   // 公众号授权 key，会失效
-  key: "53d58f2c35f2d81fe753719df1645c0bb8f4197faf7c385be7a7643cb6bc4f0269a58805f10b25d882d9ba197c2adc4a0f953f4e52067cced5ab9d0f8f09764ebd13fdcba3f5cc40f70b97486eac4887",
+  key: "dfb23297fbb00589300a991d9ced03d842943b1630e1aca11fe672999cdd8229fbc00b606187fd3ca5eda4e58e294524544a6048f6d444bb4fda0060fe82ad4df0aa78ff35d73b36d9918a1ebacdab9e",
   // 用户标识
-  uin: "MTMwNDA4MTI0MA%3D%3D",
+  uin: "MjU4NjUyOTI3Mw%3D%3D",
   /**
    * 公众号标识
    * 天合光能：MzA3MzI1NTYzMA==
@@ -25,17 +25,11 @@ const COMMON_PARAMS = {
    */
   __biz: "MzA5Njc4ODI1NA=="
 };
-let page=0; 
+var page=0; 
 const pageTotal=1;//取几页，每页10次推送数据
-const pageSize=5;//每页取几条数据
+const pageSize=1;//每页取几条数据
 /***************************************** 爬虫 *****************************************/
-
-const output_txt = `result.txt`;
-
-try {
-  fs.unlinkSync(output_txt);
-} catch (error) {}
-
+var output_txt = '';
 /**
  * 根据 offset 生成文章列表接口的 url
  * @param {从第几篇文章开始} offset
@@ -113,78 +107,93 @@ function getArticleReadCount(url) {
     }, 2000);
   });
 }
+async function run(offset = 0) {
+  console.log(`
+    ******** 公众号文章爬虫    ********
+    ******** 作者：Jsonzhang   ********
+    ******** 时间：2019-09-15 ********
 
-function run(offset = 0) {
-  axios
-    .get(generateArticlesUrl(offset))
-    .then(async ({data}) => {
-      let articles = JSON.parse(data.general_msg_list).list;
-      let nextOffset = data.next_offset;
+    开始干活了~~~
+  `);
+    let res= await axios.get(generateArticlesUrl(offset))
+    data=res.data
+    let articles = JSON.parse(data.general_msg_list).list;
+    let nextOffset = data.next_offset;
+    /* articles = filterArticles(articles); */
+    let finalArticles = [];
 
-      /* articles = filterArticles(articles); */
+    for (let i = 0; i < articles.length; i++) {
+      let subArticles = [];
+      let article = articles[i];
+      let {
+        comm_msg_info: basic = {}, 
+        app_msg_ext_info: info = {}
+      } = article;
 
-      let finalArticles = [];
+      if (!info.title) continue;
 
-      for (let i = 0; i < articles.length; i++) {
-        let subArticles = [];
-        let article = articles[i];
-        let {
-          comm_msg_info: basic = {}, 
-          app_msg_ext_info: info = {}
-        } = article;
+      // 比较接口返回的文章 url 与实际访问的 url 得到以下替换规则
+      let url = info.content_url
+        .replace(/amp;/g, "")
+        // .replace(/27#wechat_redirect/g, "38");
 
-        if (!info.title) continue;
+      // 文章发布时间
+      let time = moment(basic.datetime * 1000).format("YYYY-MM-DD HH:mm:ss");
 
-        // 比较接口返回的文章 url 与实际访问的 url 得到以下替换规则
-        let url = info.content_url
-          .replace(/amp;/g, "")
-          // .replace(/27#wechat_redirect/g, "38");
-
-        // 文章发布时间
-        let time = moment(basic.datetime * 1000).format("YYYY-MM-DD HH:mm:ss");
-
-        /* let readCount = await getArticleReadCount(url); */
-        
-        console.log(
-          `标题：${info.title}, 发布时间：${time}, 阅读量：0`
-        );
-        // 先加头条
-        subArticles.push({
-          title: info.title,
-          desc: info.digest,
-          url,
-          time,
-          cover: info.cover
-        });
-        // 再加子文章
-        if (info.multi_app_msg_item_list.length > 0) {
-          info.multi_app_msg_item_list.forEach(item=>{
-            subArticles.push({
-              title: item.title,
-              desc: item.digest,
-              url: item.content_url,
-              time: time,
-              cover: item.cover
-            });
+      /* let readCount = await getArticleReadCount(url); */
+      
+      console.log(
+        `标题：${info.title}, 发布时间：${time}, 阅读量：0`
+      );
+      // 先加头条
+      subArticles.push({
+        title: info.title,
+        desc: info.digest,
+        url,
+        time,
+        cover: info.cover
+      });
+      // 再加子文章
+      if (info.multi_app_msg_item_list.length > 0) {
+        info.multi_app_msg_item_list.forEach(item=>{
+          subArticles.push({
+            title: item.title,
+            desc: item.digest,
+            url: item.content_url,
+            time: time,
+            cover: item.cover
           });
-        }
-        finalArticles.push(subArticles);
+        });
       }
-      // 写入 txt 文件
-      fs.appendFileSync(output_txt, JSON.stringify(finalArticles), "utf8");
-      if (++page > pageTotal) {
-        run(nextOffset);
-      }
-    })
-    .catch(error => console.log(error));
+      finalArticles.push(subArticles);
+    }
+    output_txt+=JSON.stringify(finalArticles)
+    // 写入 txt 文件
+    // fs.appendFileSync(output_txt, JSON.stringify(finalArticles), "utf8");
+    if (++page < pageTotal) {
+      run(nextOffset);
+    }else{
+      return output_txt
+    }
 }
-
-console.log(`
-******** 公众号文章爬虫    ********
-******** 作者：Jsonzhang   ********
-******** 时间：2019-09-15 ********
-
-开始干活了~~~
-`);
-
-run();
+function GetQueryString(url,name) {
+  var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+  var r = url.match(reg);
+  if (r != null)
+      return decodeURI(r[2]);
+  return null;
+}
+module.exports={
+  run,
+  setParams:(key,uin,biz,pageSize)=>{
+    COMMON_PARAMS.key=key
+    COMMON_PARAMS.uin=uin
+    COMMON_PARAMS.__biz=biz
+    pageSize=pageSize
+  },
+  getParams:_=>{
+    return COMMON_PARAMS
+  },
+  GetQueryString
+}
+// run();
