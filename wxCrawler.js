@@ -167,13 +167,12 @@ async function run(offset = 0) {
       }
       finalArticles.push(subArticles);
     }
-    output_txt+=JSON.stringify(finalArticles)
+    return finalArticles
     // 写入 txt 文件
     // fs.appendFileSync(output_txt, JSON.stringify(finalArticles), "utf8");
     // if (++page < pageTotal) {
     //   run(nextOffset);
     // }else{
-      return output_txt
     // }
 }
 function GetQueryString(url,name) {
