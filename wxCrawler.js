@@ -170,11 +170,11 @@ async function run(offset = 0) {
     output_txt+=JSON.stringify(finalArticles)
     // 写入 txt 文件
     // fs.appendFileSync(output_txt, JSON.stringify(finalArticles), "utf8");
-    if (++page < pageTotal) {
-      run(nextOffset);
-    }else{
+    // if (++page < pageTotal) {
+    //   run(nextOffset);
+    // }else{
       return output_txt
-    }
+    // }
 }
 function GetQueryString(url,name) {
   var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
