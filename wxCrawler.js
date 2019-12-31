@@ -27,7 +27,7 @@ const COMMON_PARAMS = {
 };
 var page=0; 
 const pageTotal=1;//取几页，每页10次推送数据
-const pageSize=1;//每页取几条数据
+var pageSize=1;//每页取几条数据
 /***************************************** 爬虫 *****************************************/
 var output_txt = '';
 /**
@@ -184,11 +184,11 @@ function GetQueryString(url,name) {
 }
 module.exports={
   run,
-  setParams:(key,uin,biz,pageSize)=>{
+  setParams:(key,uin,biz,pagesize)=>{
     COMMON_PARAMS.key=key
     COMMON_PARAMS.uin=uin
     COMMON_PARAMS.__biz=biz
-    pageSize=pageSize
+    pageSize=pagesize
   },
   getParams:_=>{
     return COMMON_PARAMS
