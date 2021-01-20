@@ -121,7 +121,6 @@ async function run(offset = 0) {
     let nextOffset = data.next_offset;
     /* articles = filterArticles(articles); */
     let finalArticles = [];
-
     for (let i = 0; i < articles.length; i++) {
       let subArticles = [];
       let article = articles[i];
@@ -129,8 +128,7 @@ async function run(offset = 0) {
         comm_msg_info: basic = {}, 
         app_msg_ext_info: info = {}
       } = article;
-
-      if (!info.title) continue;
+      //if (!info.title) continue;
 
       // 比较接口返回的文章 url 与实际访问的 url 得到以下替换规则
       let url = info.content_url
